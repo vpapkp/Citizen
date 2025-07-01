@@ -502,4 +502,74 @@
             const isHidden = summarySection.style.display === 'none';
             if (isHidden) {
                 renderSummary();
-                summarySection
+                summarySection.style.display = 'block';
+                summaryToggleButton.textContent = 'Hide Summary';
+            } else {
+                summarySection.style.display = 'none';
+                summaryToggleButton.textContent = 'Show Summary';
+            }
+        });
+
+        resetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all flags and answers?')) {
+                flashcards.forEach(card => {
+                    card.isFlagged = false;
+                    card.status = 'unanswered';
+                });
+                if(reviewMode) toggleReviewMode();
+                showCard(currentCard);
+                renderSummary();
+            }
+        });
+
+        // --- Swipe Logic ---
+        let touchstartX = 0;
+        let touchstartY = 0;
+        let touchendX = 0;
+        const swipeThreshold = 50; 
+
+        function handleSwipe() {
+            const deltaX = touchendX - touchstartX;
+            if (Math.abs(deltaX) < swipeThreshold) {
+                return;
+            }
+            if (touchendX < touchstartX) {
+                nextButton.click(); // Swipe Left
+            }
+            if (touchendX > touchstartX) {
+                prevButton.click(); // Swipe Right
+            }
+        }
+
+        cardElement.addEventListener('touchstart', e => {
+            if (e.target.closest('button') || e.target.closest('select')) return;
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        }, false);
+
+        cardElement.addEventListener('touchmove', e => {
+            const moveX = e.changedTouches[0].screenX;
+            const moveY = e.changedTouches[0].screenY;
+            const deltaX = moveX - touchstartX;
+            const deltaY = moveY - touchstartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        cardElement.addEventListener('touchend', e => {
+            if (e.target.closest('button') || e.target.closest('select')) return;
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+
+        // --- Initial Load ---
+        populateSelect();
+        showCard(currentCard);
+        summarySection.style.display = 'none';
+    });
+</script>
+</body>
+</html>
