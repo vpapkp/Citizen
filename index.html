@@ -41,7 +41,7 @@
         }
         .card {
             width: 100%;
-            height: 390px;
+            height: 380px; /* Reduced height */
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.6s;
@@ -123,6 +123,7 @@
         .content {
             font-size: 1.1em;
             line-height: 1.5;
+            overflow-y: auto; /* Allow scrolling for long answers on back */
         }
         .answer-content ul { list-style-type: none; padding: 0; margin: 0; }
         .answer-content li { 
@@ -335,15 +336,30 @@
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        shuffleArray(flashcards);
+
         let currentCard = 0;
         let reviewMode = false;
         let flaggedIndices = [];
         let currentReviewIndex = 0;
 
-        flashcards.forEach(card => {
+        // Add originalIndex to each card object after shuffling
+        flashcards.forEach((card, index) => {
             card.isFlagged = false;
             card.status = 'unanswered';
+            card.shuffledIndex = index; // Store its shuffled position
         });
+        
+        const originalOrder = [...flashcards].sort((a,b) => (a.q > b.q ? 1 : -1));
+
 
         const cardElement = document.getElementById('card');
         const questionTitle = document.getElementById('question-title');
@@ -375,7 +391,8 @@
         function showCard(index) {
             cardElement.classList.remove('is-flipped');
             const question = flashcards[index];
-            questionTitle.textContent = `Question ${index + 1}`;
+            const originalIndex = originalOrder.findIndex(c => c.q === question.q);
+            questionTitle.textContent = `Question ${originalIndex + 1}`;
             questionText.innerHTML = question.q;
             let answerHtml = '<ul>';
             question.a.forEach(ans => { answerHtml += `<li>${ans}</li>`; });
@@ -387,10 +404,11 @@
 
         function populateSelect() {
             questionSelect.innerHTML = '';
-            flashcards.forEach((_, index) => {
+            flashcards.forEach((card, index) => {
                 const option = document.createElement('option');
                 option.value = index;
-                option.textContent = `Question ${index + 1}`;
+                const originalIndex = originalOrder.findIndex(c => c.q === card.q);
+                option.textContent = `Question ${originalIndex + 1}`;
                 questionSelect.appendChild(option);
             });
         }
@@ -401,11 +419,13 @@
             let flaggedCount = 0;
             let incorrectCount = 0;
             flashcards.forEach((card, index) => {
+                const originalIndex = originalOrder.findIndex(c => c.q === card.q);
                 const li = document.createElement('li');
-                li.innerHTML = `Q${index + 1}: ${card.q.substring(0, 40)}...`;
+                li.innerHTML = `Q${originalIndex + 1}: ${card.q.substring(0, 40)}...`;
                 const jumpToCard = () => {
                     currentCard = index;
                     showCard(currentCard);
+                    if(reviewMode) toggleReviewMode();
                     summarySection.style.display = 'none';
                     summaryToggleButton.textContent = 'Show Summary';
                 };
@@ -435,7 +455,11 @@
         function toggleReviewMode() {
             reviewMode = !reviewMode;
             if (reviewMode) {
-                flaggedIndices = flashcards.map((card, index) => card.isFlagged ? index : -1).filter(index => index !== -1);
+                flaggedIndices = [];
+                flashcards.forEach((card, index) => {
+                    if (card.isFlagged) flaggedIndices.push(index);
+                });
+
                 if (flaggedIndices.length === 0) {
                     alert("No cards have been flagged for review.");
                     reviewMode = false;
@@ -517,12 +541,11 @@
                     card.status = 'unanswered';
                 });
                 if(reviewMode) toggleReviewMode();
-                showCard(currentCard);
+                updateCardUI(currentCard);
                 renderSummary();
             }
         });
 
-        // --- Swipe Logic ---
         let touchstartX = 0;
         let touchstartY = 0;
         let touchendX = 0;
@@ -534,10 +557,10 @@
                 return;
             }
             if (touchendX < touchstartX) {
-                nextButton.click(); // Swipe Left
+                nextButton.click();
             }
             if (touchendX > touchstartX) {
-                prevButton.click(); // Swipe Right
+                prevButton.click();
             }
         }
 
@@ -552,7 +575,6 @@
             const moveY = e.changedTouches[0].screenY;
             const deltaX = moveX - touchstartX;
             const deltaY = moveY - touchstartY;
-
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 e.preventDefault();
             }
@@ -564,8 +586,6 @@
             handleSwipe();
         }, false);
 
-
-        // --- Initial Load ---
         populateSelect();
         showCard(currentCard);
         summarySection.style.display = 'none';
