@@ -191,6 +191,9 @@
         .bottom-actions button {
             flex-grow: 1;
         }
+        #voice-toggle-button.active {
+            background-color: var(--correct-color);
+        }
         .note { font-style: italic; font-size: 0.9em; color: #6c757d; }
     </style>
 </head>
@@ -229,7 +232,8 @@
     </div>
     <div class="bottom-actions">
         <button class="nav-button" id="review-button" style="background-color: #ffc107; color: black;">Review Flagged</button>
-        <button class="nav-button" id="summary-toggle-button" style="background-color: #6c757d;">Show Summary</button>
+        <button class="nav-button" id="voice-toggle-button">🔊 Voice Off</button>
+        <button class="nav-button" id="summary-toggle-button" style="background-color: #6c757d;">Summary</button>
     </div>
     <div class="summary-section" id="summary-section">
         <h2>Review Summary</h2>
@@ -363,6 +367,7 @@
         let reviewMode = false;
         let flaggedIndices = [];
         let currentReviewIndex = 0;
+        let isVoiceEnabled = false;
 
         flashcards.forEach(card => {
             card.isFlagged = false;
@@ -387,9 +392,17 @@
         const incorrectList = document.getElementById('incorrect-list');
         const resetButton = document.getElementById('reset-button');
         const reviewButton = document.getElementById('review-button');
+        const voiceToggleButton = document.getElementById('voice-toggle-button');
         const completedCountEl = document.getElementById('completed-count');
         const correctCountEl = document.getElementById('correct-count');
         const wrongCountEl = document.getElementById('wrong-count');
+
+        function speak(text) {
+            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+            speechSynthesis.cancel(); // Stop any previous speech
+            const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, '')); // Remove asterisks for cleaner speech
+            window.speechSynthesis.speak(utterance);
+        }
 
         function updateStats() {
             let completed = 0;
@@ -431,6 +444,7 @@
             answerText.innerHTML = answerHtml;
             questionSelect.value = index;
             updateCardUI(index);
+            speak(question.q);
         }
 
         function populateSelect() {
@@ -467,9 +481,8 @@
                     currentCard = item.index;
                     showCard(currentCard);
                     summarySection.style.display = 'none';
-                    summaryToggleButton.textContent = 'Show Summary';
+                    summaryToggleButton.textContent = 'Summary';
                 };
-
                 if (item.card.isFlagged) {
                     const flaggedLi = li.cloneNode(true);
                     flaggedLi.onclick = jumpToCard;
@@ -565,6 +578,18 @@
         
         reviewButton.addEventListener('click', toggleReviewMode);
 
+        voiceToggleButton.addEventListener('click', () => {
+            isVoiceEnabled = !isVoiceEnabled;
+            voiceToggleButton.classList.toggle('active', isVoiceEnabled);
+            if (isVoiceEnabled) {
+                voiceToggleButton.textContent = '🔊 Voice On';
+                speak(flashcards[currentCard].q); // Read current card on enable
+            } else {
+                voiceToggleButton.textContent = '🔊 Voice Off';
+                speechSynthesis.cancel();
+            }
+        });
+
         summaryToggleButton.addEventListener('click', () => {
             const isHidden = summarySection.style.display === 'none';
             if (isHidden) {
@@ -573,18 +598,21 @@
                 summaryToggleButton.textContent = 'Hide Summary';
             } else {
                 summarySection.style.display = 'none';
-                summaryToggleButton.textContent = 'Show Summary';
+                summaryToggleButton.textContent = 'Summary';
             }
         });
 
         resetButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all flags and answers?')) {
+                shuffleArray(flashcards); // Re-shuffle on reset
                 flashcards.forEach(card => {
                     card.isFlagged = false;
                     card.status = 'unanswered';
                 });
                 if(reviewMode) toggleReviewMode();
-                updateCardUI(currentCard);
+                populateSelect();
+                currentCard = 0;
+                showCard(currentCard);
                 renderSummary();
                 updateStats();
             }
