@@ -82,9 +82,11 @@
             position: absolute;
             top: 15px;
             right: 15px;
+            display: flex;
+            gap: 10px;
         }
-        #flag-button {
-            background: #f0f2f5;
+        .icon-button {
+             background: #f0f2f5;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 5px 10px;
@@ -121,7 +123,13 @@
         .question-title {
             font-size: 1.3em;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+        }
+        #speech-status {
+            font-style: italic;
+            color: #6c757d;
+            height: 20px;
+            margin-bottom: 5px;
         }
         .answer-title {
             font-size: 1.3em;
@@ -210,10 +218,12 @@
         <div class="card" id="card">
             <div class="card-face card-face-front">
                 <div class="top-controls">
-                    <button id="flag-button">🚩 Flag</button>
+                    <button class="icon-button" id="listen-button">🎙️</button>
+                    <button class="icon-button" id="flag-button">🚩</button>
                 </div>
                 <div class="question-title" id="question-title"></div>
                 <div class="content" id="question-text"></div>
+                <div id="speech-status"></div>
             </div>
             <div class="card-face card-face-back">
                 <div class="answer-title">Answer</div>
@@ -250,110 +260,124 @@
 
 <script>
     const flashcards = [
-        { q: "What is the supreme law of the land?", a: ["the Constitution"] },
-        { q: "What does the Constitution do?", a: ["sets up the government", "defines the government", "protects basic rights of Americans"] },
-        { q: "The idea of self-government is in the first three words of the Constitution. What are these words?", a: ["We the People"] },
-        { q: "What is an amendment?", a: ["a change (to the Constitution)", "an addition (to the Constitution)"] },
-        { q: "What do we call the first ten amendments to the Constitution?", a: ["the Bill of Rights"] },
-        { q: "What is one right or freedom from the First Amendment?*", a: ["speech", "religion", "assembly", "press", "petition the government"] },
-        { q: "How many amendments does the Constitution have?", a: ["twenty-seven (27)"] },
-        { q: "What did the Declaration of Independence do?", a: ["announced our independence (from Great Britain)"] },
-        { q: "What are two rights in the Declaration of Independence?", a: ["life", "liberty", "pursuit of happiness"] },
-        { q: "What is freedom of religion?", a: ["You can practice any religion, or not practice a religion."] },
-        { q: "What is the economic system in the United States?*", a: ["capitalist economy", "market economy"] },
-        { q: "What is the 'rule of law'?", a: ["Everyone must follow the law.", "No one is above the law."] },
-        { q: "Name one branch or part of the government.*", a: ["Congress", "President (executive)", "the courts (judicial)"] },
-        { q: "What stops one branch of government from becoming too powerful?", a: ["checks and balances", "separation of powers"] },
-        { q: "Who is in charge of the executive branch?", a: ["the President"] },
-        { q: "Who makes federal laws?", a: ["Congress", "Senate and House of Representatives"] },
-        { q: "What are the two parts of the U.S. Congress?*", a: ["the Senate and House (of Representatives)"] },
-        { q: "How many U.S. Senators are there?", a: ["one hundred (100)"] },
-        { q: "We elect a U.S. Senator for how many years?", a: ["six (6)"] },
-        { q: "Who is one of your state's U.S. Senators now?*", a: ["John Cornyn", "Ted Cruz"] },
-        { q: "The House of Representatives has how many voting members?", a: ["four hundred thirty-five (435)"] },
-        { q: "We elect a U.S. Representative for how many years?", a: ["two (2)"] },
-        { q: "Name your U.S. Representative.", a: ["Keith Self"] },
-        { q: "Who does a U.S. Senator represent?", a: ["all people of the state"] },
-        { q: "Why do some states have more Representatives than other states?", a: ["(because of) the state's population"] },
-        { q: "We elect a President for how many years?", a: ["four (4)"] },
-        { q: "In what month do we vote for President?*", a: ["November"] },
-        { q: "What is the name of the President of the United States now?*", a: ["Donald Trump"] },
-        { q: "What is the name of the Vice President of the United States now?", a: ["J. D. Vance"] },
-        { q: "If the President can no longer serve, who becomes President?", a: ["the Vice President"] },
-        { q: "If both the President and the Vice President can no longer serve, who becomes President?", a: ["the Speaker of the House"] },
-        { q: "Who is the Commander in Chief of the military?", a: ["the President"] },
-        { q: "Who signs bills to become laws?", a: ["the President"] },
-        { q: "Who vetoes bills?", a: ["the President"] },
-        { q: "What does the President's Cabinet do?", a: ["advises the President"] },
-        { q: "What are two Cabinet-level positions?", a: ["Secretary of Defense", "Secretary of Education", "Secretary of State", "Attorney General", "Vice President"] },
-        { q: "What does the judicial branch do?", a: ["reviews laws", "explains laws", "resolves disputes", "decides if a law goes against the Constitution"] },
-        { q: "What is the highest court in the United States?", a: ["the Supreme Court"] },
-        { q: "How many justices are on the Supreme Court?", a: ["Nine (9)"] },
-        { q: "Who is the Chief Justice of the United States now?", a: ["John G. Roberts, Jr."] },
-        { q: "Under our Constitution, some powers belong to the federal government. What is one power of the federal government?", a: ["to print money", "to declare war", "to create an army", "to make treaties"] },
-        { q: "Under our Constitution, some powers belong to the states. What is one power of the states?", a: ["provide schooling and education", "provide protection (police)", "give a driver's license"] },
-        { q: "Who is the Governor of your state now?", a: ["Greg Abbott"] },
-        { q: "What is the capital of your state?*", a: ["Austin"] },
-        { q: "What are the two major political parties in the United States?*", a: ["Democratic and Republican"] },
-        { q: "What is the political party of the President now?", a: ["Republican Party"] },
-        { q: "What is the name of the Speaker of the House of Representatives now?", a: ["Mike Johnson"] },
-        { q: "There are four amendments to the Constitution about who can vote. Describe one of them.", a: ["Citizens eighteen (18) and older can vote.", "You don't have to pay a poll tax to vote.", "Any citizen can vote.", "A male citizen of any race can vote."] },
-        { q: "What is one responsibility that is only for United States citizens?*", a: ["serve on a jury", "vote in a federal election"] },
-        { q: "Name one right only for United States citizens.", a: ["vote in a federal election", "run for federal office"] },
-        { q: "What are two rights of everyone living in the United States?", a: ["freedom of expression", "freedom of speech", "freedom of assembly", "freedom of religion", "the right to bear arms"] },
-        { q: "What do we show loyalty to when we say the Pledge of Allegiance?", a: ["the United States", "the flag"] },
-        { q: "What is one promise you make when you become a United States citizen?", a: ["give up loyalty to other countries", "defend the Constitution and laws", "obey the laws of the United States", "serve in the U.S. military (if needed)"] },
-        { q: "How old do citizens have to be to vote for President?*", a: ["eighteen (18) and older"] },
-        { q: "What are two ways that Americans can participate in their democracy?", a: ["vote", "join a political party", "help with a campaign", "run for office"] },
-        { q: "When is the last day you can send in federal income tax forms?*", a: ["April 15"] },
-        { q: "When must all men register for the Selective Service?", a: ["at age eighteen (18)", "between eighteen (18) and twenty-six (26)"] },
-        { q: "What is one reason colonists came to America?", a: ["freedom", "political liberty", "religious freedom", "economic opportunity", "escape persecution"] },
-        { q: "Who lived in America before the Europeans arrived?", a: ["American Indians", "Native Americans"] },
-        { q: "What group of people was taken to America and sold as slaves?", a: ["Africans", "people from Africa"] },
-        { q: "Why did the colonists fight the British?", a: ["because of high taxes (taxation without representation)", "because they didn't have self-government"] },
-        { q: "Who wrote the Declaration of Independence?", a: ["(Thomas) Jefferson"] },
-        { q: "When was the Declaration of Independence adopted?", a: ["July 4, 1776"] },
-        { q: "There were 13 original states. Name three.", a: ["New Hampshire", "Massachusetts", "New York", "Virginia", "Maryland"] },
-        { q: "What happened at the Constitutional Convention?", a: ["The Constitution was written."] },
-        { q: "When was the Constitution written?", a: ["1787"] },
-        { q: "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.", a: ["(James) Madison", "(Alexander) Hamilton", "(John) Jay"] },
-        { q: "What is one thing Benjamin Franklin is famous for?", a: ["U.S. diplomat", "oldest member of the Constitutional Convention", "first Postmaster General", "writer of 'Poor Richard's Almanac'"] },
-        { q: "Who is the 'Father of Our Country'?", a: ["(George) Washington"] },
-        { q: "Who was the first President?*", a: ["(George) Washington"] },
-        { q: "What territory did the United States buy from France in 1803?", a: ["the Louisiana Territory"] },
-        { q: "Name one war fought by the United States in the 1800s.", a: ["War of 1812", "Mexican-American War", "Civil War", "Spanish-American War"] },
-        { q: "Name the U.S. war between the North and the South.", a: ["the Civil War", "the War between the States"] },
-        { q: "Name one problem that led to the Civil War.", a: ["slavery", "economic reasons", "states' rights"] },
-        { q: "What was one important thing that Abraham Lincoln did?*", a: ["freed the slaves (Emancipation Proclamation)", "saved (or preserved) the Union", "led the United States during the Civil War"] },
-        { q: "What did the Emancipation Proclamation do?", a: ["freed the slaves"] },
-        { q: "What did Susan B. Anthony do?", a: ["fought for women's rights", "fought for civil rights"] },
-        { q: "Name one war fought by the United States in the 1900s.*", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"] },
-        { q: "Who was President during World War I?", a: ["(Woodrow) Wilson"] },
-        { q: "Who was President during the Great Depression and World War II?", a: ["(Franklin) Roosevelt"] },
-        { q: "Who did the United States fight in World War II?", a: ["Japan, Germany, and Italy"] },
-        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"] },
-        { q: "During the Cold War, what was the main concern of the United States?", a: ["Communism"] },
-        { q: "What movement tried to end racial discrimination?", a: ["civil rights (movement)"] },
-        { q: "What did Martin Luther King, Jr. do?*", a: ["fought for civil rights", "worked for equality for all Americans"] },
-        { q: "What major event happened on September 11, 2001, in the United States?", a: ["Terrorists attacked the United States."] },
-        { q: "Name one American Indian tribe in the United States.", a: ["Cherokee", "Navajo", "Sioux", "Chippewa", "Choctaw", "Pueblo", "Apache"] },
-        { q: "Name one of the two longest rivers in the United States.", a: ["Missouri (River)", "Mississippi (River)"] },
-        { q: "What ocean is on the West Coast of the United States?", a: ["Pacific (Ocean)"] },
-        { q: "What ocean is on the East Coast of the United States?", a: ["Atlantic (Ocean)"] },
-        { q: "Name one U.S. territory.", a: ["Puerto Rico", "U.S. Virgin Islands", "Guam"] },
-        { q: "Name one state that borders Canada.", a: ["Maine", "New York", "Washington", "Alaska"] },
-        { q: "Name one state that borders Mexico.", a: ["California", "Arizona", "New Mexico", "Texas"] },
-        { q: "What is the capital of the United States?*", a: ["Washington, D.C."] },
-        { q: "Where is the Statue of Liberty?*", a: ["New York (Harbor)", "Liberty Island"] },
-        { q: "Why does the flag have 13 stripes?", a: ["because there were 13 original colonies"] },
-        { q: "Why does the flag have 50 stars?*", a: ["because there is one star for each state"] },
-        { q: "What is the name of the national anthem?", a: ["The Star-Spangled Banner"] },
-        { q: "When do we celebrate Independence Day?*", a: ["July 4"] },
-        { q: "Name two national U.S. holidays.", a: ["New Year's Day", "Martin Luther King, Jr. Day", "Presidents' Day", "Memorial Day", "Independence Day", "Labor Day", "Thanksgiving", "Christmas"] },
+        { q: "What is the supreme law of the land?", a: ["the Constitution"], keywords: ["constitution"] },
+        { q: "What does the Constitution do?", a: ["sets up the government", "defines the government", "protects basic rights of Americans"], keywords: ["sets", "defines", "government", "protects", "rights"] },
+        { q: "The idea of self-government is in the first three words of the Constitution. What are these words?", a: ["We the People"], keywords: ["we the people"] },
+        { q: "What is an amendment?", a: ["a change (to the Constitution)", "an addition (to the Constitution)"], keywords: ["change", "addition"] },
+        { q: "What do we call the first ten amendments to the Constitution?", a: ["the Bill of Rights"], keywords: ["bill of rights"] },
+        { q: "What is one right or freedom from the First Amendment?*", a: ["speech", "religion", "assembly", "press", "petition the government"], keywords: ["speech", "religion", "assembly", "press", "petition"] },
+        { q: "How many amendments does the Constitution have?", a: ["twenty-seven (27)"], keywords: ["27", "twenty-seven", "twenty seven"] },
+        { q: "What did the Declaration of Independence do?", a: ["announced our independence (from Great Britain)"], keywords: ["announced", "declared", "independence", "free"] },
+        { q: "What are two rights in the Declaration of Independence?", a: ["life", "liberty", "pursuit of happiness"], keywords: ["life", "liberty", "happiness"] },
+        { q: "What is freedom of religion?", a: ["You can practice any religion, or not practice a religion."], keywords: ["practice any religion", "not practice"] },
+        { q: "What is the economic system in the United States?*", a: ["capitalist economy", "market economy"], keywords: ["capitalist", "market"] },
+        { q: "What is the 'rule of law'?", a: ["Everyone must follow the law.", "No one is above the law."], keywords: ["everyone must follow", "no one is above"] },
+        { q: "Name one branch or part of the government.*", a: ["Congress", "President (executive)", "the courts (judicial)"], keywords: ["congress", "president", "executive", "courts", "judicial", "legislative"] },
+        { q: "What stops one branch of government from becoming too powerful?", a: ["checks and balances", "separation of powers"], keywords: ["checks", "balances", "separation", "powers"] },
+        { q: "Who is in charge of the executive branch?", a: ["the President"], keywords: ["president"] },
+        { q: "Who makes federal laws?", a: ["Congress", "Senate and House of Representatives"], keywords: ["congress", "senate", "house", "legislature"] },
+        { q: "What are the two parts of the U.S. Congress?*", a: ["the Senate and House (of Representatives)"], keywords: ["senate", "house"] },
+        { q: "How many U.S. Senators are there?", a: ["one hundred (100)"], keywords: ["100", "one hundred"] },
+        { q: "We elect a U.S. Senator for how many years?", a: ["six (6)"], keywords: ["6", "six"] },
+        { q: "Who is one of your state's U.S. Senators now?*", a: ["John Cornyn", "Ted Cruz"], keywords: ["cornyn", "cruz"] },
+        { q: "The House of Representatives has how many voting members?", a: ["four hundred thirty-five (435)"], keywords: ["435", "four hundred thirty-five", "four thirty-five"] },
+        { q: "We elect a U.S. Representative for how many years?", a: ["two (2)"], keywords: ["2", "two"] },
+        { q: "Name your U.S. Representative.", a: ["Keith Self"], keywords: ["keith", "self"] },
+        { q: "Who does a U.S. Senator represent?", a: ["all people of the state"], keywords: ["all people", "of the state"] },
+        { q: "Why do some states have more Representatives than other states?", a: ["(because of) the state's population"], keywords: ["population", "more people"] },
+        { q: "We elect a President for how many years?", a: ["four (4)"], keywords: ["4", "four"] },
+        { q: "In what month do we vote for President?*", a: ["November"], keywords: ["november"] },
+        { q: "What is the name of the President of the United States now?*", a: ["Donald Trump"], keywords: ["donald", "trump"] },
+        { q: "What is the name of the Vice President of the United States now?", a: ["J. D. Vance"], keywords: ["jd", "vance"] },
+        { q: "If the President can no longer serve, who becomes President?", a: ["the Vice President"], keywords: ["vice president"] },
+        { q: "If both the President and the Vice President can no longer serve, who becomes President?", a: ["the Speaker of the House"], keywords: ["speaker", "house"] },
+        { q: "Who is the Commander in Chief of the military?", a: ["the President"], keywords: ["president"] },
+        { q: "Who signs bills to become laws?", a: ["the President"], keywords: ["president"] },
+        { q: "Who vetoes bills?", a: ["the President"], keywords: ["president"] },
+        { q: "What does the President's Cabinet do?", a: ["advises the President"], keywords: ["advises"] },
+        { q: "What are two Cabinet-level positions?", a: ["Secretary of Defense", "Secretary of Education", "Secretary of State", "Attorney General", "Vice President"], keywords: ["defense", "education", "state", "attorney general", "vice president", "agriculture", "commerce", "energy", "labor", "treasury"] },
+        { q: "What does the judicial branch do?", a: ["reviews laws", "explains laws", "resolves disputes", "decides if a law goes against the Constitution"], keywords: ["reviews", "explains", "resolves", "decides"] },
+        { q: "What is the highest court in the United States?", a: ["the Supreme Court"], keywords: ["supreme court"] },
+        { q: "How many justices are on the Supreme Court?", a: ["Nine (9)"], keywords: ["9", "nine"] },
+        { q: "Who is the Chief Justice of the United States now?", a: ["John G. Roberts, Jr."], keywords: ["john roberts", "roberts"] },
+        { q: "Under our Constitution, some powers belong to the federal government. What is one power of the federal government?", a: ["to print money", "to declare war", "to create an army", "to make treaties"], keywords: ["print money", "declare war", "create army", "make treaties"] },
+        { q: "Under our Constitution, some powers belong to the states. What is one power of the states?", a: ["provide schooling and education", "provide protection (police)", "give a driver's license"], keywords: ["schooling", "education", "police", "protection", "safety", "driver's license"] },
+        { q: "Who is the Governor of your state now?", a: ["Greg Abbott"], keywords: ["greg", "abbott"] },
+        { q: "What is the capital of your state?*", a: ["Austin"], keywords: ["austin"] },
+        { q: "What are the two major political parties in the United States?*", a: ["Democratic and Republican"], keywords: ["democratic", "republican"] },
+        { q: "What is the political party of the President now?", a: ["Republican Party"], keywords: ["republican"] },
+        { q: "What is the name of the Speaker of the House of Representatives now?", a: ["Mike Johnson"], keywords: ["mike", "johnson"] },
+        { q: "There are four amendments to the Constitution about who can vote. Describe one of them.", a: ["Citizens eighteen (18) and older can vote.", "You don't have to pay a poll tax to vote.", "Any citizen can vote.", "A male citizen of any race can vote."], keywords: ["eighteen", "18", "poll tax", "any citizen", "male citizen"] },
+        { q: "What is one responsibility that is only for United States citizens?*", a: ["serve on a jury", "vote in a federal election"], keywords: ["jury", "vote"] },
+        { q: "Name one right only for United States citizens.", a: ["vote in a federal election", "run for federal office"], keywords: ["vote", "run for office"] },
+        { q: "What are two rights of everyone living in the United States?", a: ["freedom of expression", "freedom of speech", "freedom of assembly", "freedom of religion", "the right to bear arms"], keywords: ["expression", "speech", "assembly", "religion", "bear arms"] },
+        { q: "What do we show loyalty to when we say the Pledge of Allegiance?", a: ["the United States", "the flag"], keywords: ["united states", "flag"] },
+        { q: "What is one promise you make when you become a United States citizen?", a: ["give up loyalty", "defend the Constitution", "obey the laws", "serve in the military"], keywords: ["loyalty", "defend", "obey", "serve"] },
+        { q: "How old do citizens have to be to vote for President?*", a: ["eighteen (18) and older"], keywords: ["18", "eighteen"] },
+        { q: "What are two ways that Americans can participate in their democracy?", a: ["vote", "join a political party", "help with a campaign", "run for office"], keywords: ["vote", "join party", "campaign", "run for office", "call senators"] },
+        { q: "When is the last day you can send in federal income tax forms?*", a: ["April 15"], keywords: ["april 15", "april fifteenth"] },
+        { q: "When must all men register for the Selective Service?", a: ["at age eighteen (18)", "between eighteen (18) and twenty-six (26)"], keywords: ["18", "eighteen", "26", "twenty-six"] },
+        { q: "What is one reason colonists came to America?", a: ["freedom", "political liberty", "religious freedom", "economic opportunity", "escape persecution"], keywords: ["freedom", "liberty", "religious", "economic", "persecution"] },
+        { q: "Who lived in America before the Europeans arrived?", a: ["American Indians", "Native Americans"], keywords: ["american indians", "native americans"] },
+        { q: "What group of people was taken to America and sold as slaves?", a: ["Africans", "people from Africa"], keywords: ["africans", "africa"] },
+        { q: "Why did the colonists fight the British?", a: ["because of high taxes (taxation without representation)", "because they didn't have self-government"], keywords: ["high taxes", "taxation without representation", "self-government"] },
+        { q: "Who wrote the Declaration of Independence?", a: ["(Thomas) Jefferson"], keywords: ["jefferson"] },
+        { q: "When was the Declaration of Independence adopted?", a: ["July 4, 1776"], keywords: ["july 4 1776"] },
+        { q: "There were 13 original states. Name three.", a: ["New Hampshire", "Massachusetts", "New York", "Virginia", "Maryland"], keywords: ["hampshire", "massachusetts", "york", "virginia", "maryland", "carolina", "georgia", "jersey", "pennsylvania", "delaware", "connecticut", "rhode island"] },
+        { q: "What happened at the Constitutional Convention?", a: ["The Constitution was written."], keywords: ["constitution was written"] },
+        { q: "When was the Constitution written?", a: ["1787"], keywords: ["1787"] },
+        { q: "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.", a: ["(James) Madison", "(Alexander) Hamilton", "(John) Jay"], keywords: ["madison", "hamilton", "jay", "publius"] },
+        { q: "What is one thing Benjamin Franklin is famous for?", a: ["U.S. diplomat", "oldest member of the Constitutional Convention", "first Postmaster General", "writer of 'Poor Richard's Almanac'"], keywords: ["diplomat", "oldest member", "postmaster", "poor richard", "libraries"] },
+        { q: "Who is the 'Father of Our Country'?", a: ["(George) Washington"], keywords: ["george washington", "washington"] },
+        { q: "Who was the first President?*", a: ["(George) Washington"], keywords: ["george washington", "washington"] },
+        { q: "What territory did the United States buy from France in 1803?", a: ["the Louisiana Territory"], keywords: ["louisiana"] },
+        { q: "Name one war fought by the United States in the 1800s.", a: ["War of 1812", "Mexican-American War", "Civil War", "Spanish-American War"], keywords: ["1812", "mexican", "civil", "spanish"] },
+        { q: "Name the U.S. war between the North and the South.", a: ["the Civil War", "the War between the States"], keywords: ["civil war", "war between states"] },
+        { q: "Name one problem that led to the Civil War.", a: ["slavery", "economic reasons", "states' rights"], keywords: ["slavery", "economic", "states' rights"] },
+        { q: "What was one important thing that Abraham Lincoln did?*", a: ["freed the slaves (Emancipation Proclamation)", "saved (or preserved) the Union", "led the United States during the Civil War"], keywords: ["freed slaves", "emancipation", "saved union", "led during civil war"] },
+        { q: "What did the Emancipation Proclamation do?", a: ["freed the slaves"], keywords: ["freed slaves"] },
+        { q: "What did Susan B. Anthony do?", a: ["fought for women's rights", "fought for civil rights"], keywords: ["women's rights", "civil rights"] },
+        { q: "Name one war fought by the United States in the 1900s.*", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"], keywords: ["world war one", "world war two", "korean", "vietnam", "gulf"] },
+        { q: "Who was President during World War I?", a: ["(Woodrow) Wilson"], keywords: ["woodrow wilson", "wilson"] },
+        { q: "Who was President during the Great Depression and World War II?", a: ["(Franklin) Roosevelt"], keywords: ["franklin roosevelt", "roosevelt"] },
+        { q: "Who did the United States fight in World War II?", a: ["Japan, Germany, and Italy"], keywords: ["japan", "germany", "italy"] },
+        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"], keywords: ["world war two", "wwii"] },
+        { q: "During the Cold War, what was the main concern of the United States?", a: ["Communism"], keywords: ["communism"] },
+        { q: "What movement tried to end racial discrimination?", a: ["civil rights (movement)"], keywords: ["civil rights"] },
+        { q: "What did Martin Luther King, Jr. do?*", a: ["fought for civil rights", "worked for equality for all Americans"], keywords: ["civil rights", "equality"] },
+        { q: "What major event happened on September 11, 2001, in the United States?", a: ["Terrorists attacked the United States."], keywords: ["terrorists attacked", "september 11", "9/11"] },
+        { q: "Name one American Indian tribe in the United States.", a: ["Cherokee", "Navajo", "Sioux", "Chippewa", "Choctaw", "Pueblo", "Apache"], keywords: ["cherokee", "navajo", "sioux", "chippewa", "choctaw", "pueblo", "apache"] },
+        { q: "Name one of the two longest rivers in the United States.", a: ["Missouri (River)", "Mississippi (River)"], keywords: ["missouri", "mississippi"] },
+        { q: "What ocean is on the West Coast of the United States?", a: ["Pacific (Ocean)"], keywords: ["pacific"] },
+        { q: "What ocean is on the East Coast of the United States?", a: ["Atlantic (Ocean)"], keywords: ["atlantic"] },
+        { q: "Name one U.S. territory.", a: ["Puerto Rico", "U.S. Virgin Islands", "Guam"], keywords: ["puerto rico", "virgin islands", "guam", "samoa", "mariana"] },
+        { q: "Name one state that borders Canada.", a: ["Maine", "New York", "Washington", "Alaska"], keywords: ["maine", "york", "washington", "alaska", "montana", "minnesota", "dakota", "idaho", "vermont", "hampshire"] },
+        { q: "Name one state that borders Mexico.", a: ["California", "Arizona", "New Mexico", "Texas"], keywords: ["california", "arizona", "new mexico", "texas"] },
+        { q: "What is the capital of the United States?*", a: ["Washington, D.C."], keywords: ["washington dc", "dc"] },
+        { q: "Where is the Statue of Liberty?*", a: ["New York (Harbor)", "Liberty Island"], keywords: ["new york", "liberty island", "hudson"] },
+        { q: "Why does the flag have 13 stripes?", a: ["because there were 13 original colonies"], keywords: ["13", "thirteen", "colonies"] },
+        { q: "Why does the flag have 50 stars?*", a: ["because there is one star for each state"], keywords: ["50", "fifty", "star for each state"] },
+        { q: "What is the name of the national anthem?", a: ["The Star-Spangled Banner"], keywords: ["star-spangled banner", "star spangled banner"] },
+        { q: "When do we celebrate Independence Day?*", a: ["July 4"], keywords: ["july 4", "july fourth"] },
+        { q: "Name two national U.S. holidays.", a: ["New Year's Day", "Martin Luther King, Jr. Day", "Presidents' Day", "Memorial Day", "Independence Day", "Labor Day", "Thanksgiving", "Christmas"], keywords: ["new year's", "martin luther king", "presidents", "memorial", "independence", "labor", "thanksgiving", "christmas", "veterans", "columbus"] },
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
         
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+        } else {
+            console.log("Speech Recognition Not Supported");
+            document.getElementById('listen-button').style.display = 'none';
+        }
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -379,11 +403,13 @@
         const cardElement = document.getElementById('card');
         const questionTitle = document.getElementById('question-title');
         const questionText = document.getElementById('question-text');
+        const speechStatus = document.getElementById('speech-status');
         const answerText = document.getElementById('answer-text');
         const prevButton = document.getElementById('prev-button');
         const nextButton = document.getElementById('next-button');
         const questionSelect = document.getElementById('question-select');
         const flagButton = document.getElementById('flag-button');
+        const listenButton = document.getElementById('listen-button');
         const correctButton = document.querySelector('.correct-button');
         const incorrectButton = document.querySelector('.incorrect-button');
         const summaryToggleButton = document.getElementById('summary-toggle-button');
@@ -399,24 +425,17 @@
 
         function speak(text) {
             if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
-            speechSynthesis.cancel(); // Stop any previous speech
-            const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, '')); // Remove asterisks for cleaner speech
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, ''));
             window.speechSynthesis.speak(utterance);
         }
 
         function updateStats() {
-            let completed = 0;
-            let correct = 0;
-            let incorrect = 0;
-            for (const card of flashcards) {
-                if (card.status === 'correct') {
-                    correct++;
-                    completed++;
-                } else if (card.status === 'incorrect') {
-                    incorrect++;
-                    completed++;
-                }
-            }
+            let completed = 0, correct = 0, incorrect = 0;
+            flashcards.forEach(card => {
+                if (card.status === 'correct') { correct++; completed++; }
+                else if (card.status === 'incorrect') { incorrect++; completed++; }
+            });
             completedCountEl.textContent = completed;
             correctCountEl.textContent = correct;
             wrongCountEl.textContent = incorrect;
@@ -434,6 +453,7 @@
 
         function showCard(index) {
             cardElement.classList.remove('is-flipped');
+            speechStatus.textContent = '';
             const question = flashcards[index];
             const originalIndex = originalOrder.findIndex(c => c.q === question.q);
             questionTitle.textContent = `Question ${originalIndex + 1}`;
@@ -463,11 +483,8 @@
         }
 
         function renderSummary() {
-            flaggedList.innerHTML = '';
-            incorrectList.innerHTML = '';
-            let flaggedCount = 0;
-            let incorrectCount = 0;
-
+            flaggedList.innerHTML = ''; incorrectList.innerHTML = '';
+            let flaggedCount = 0, incorrectCount = 0;
             const summaryItems = flashcards.map((card, index) => {
                 const originalIndex = originalOrder.findIndex(c => c.q === card.q);
                 return { card, index, originalIndex };
@@ -496,7 +513,6 @@
                     incorrectCount++;
                 }
             });
-
             if (flaggedCount === 0) flaggedList.innerHTML = '<li>None</li>';
             if (incorrectCount === 0) incorrectList.innerHTML = '<li>None</li>';
         }
@@ -505,21 +521,30 @@
             flashcards[currentCard].status = status;
             updateCardUI(currentCard);
             updateStats();
-            setTimeout(() => { nextButton.click(); }, 300);
+            setTimeout(() => { nextButton.click(); }, 1200); // Give user time to see result
+        }
+
+        function checkAnswer(transcript) {
+            speechStatus.textContent = `I heard: "${transcript}"`;
+            const card = flashcards[currentCard];
+            const heard = transcript.toLowerCase().trim();
+            
+            const isMatch = card.keywords.some(key => heard.includes(key));
+            
+            if (isMatch) {
+                setCardStatus('correct');
+            } else {
+                setCardStatus('incorrect');
+            }
         }
         
         function toggleReviewMode() {
             reviewMode = !reviewMode;
             if (reviewMode) {
-                flaggedIndices = [];
-                flashcards.forEach((card, index) => {
-                    if (card.isFlagged) flaggedIndices.push(index);
-                });
-
+                flaggedIndices = flashcards.map((card, index) => card.isFlagged ? index : -1).filter(index => index !== -1);
                 if (flaggedIndices.length === 0) {
                     alert("No cards have been flagged for review.");
-                    reviewMode = false;
-                    return;
+                    reviewMode = false; return;
                 }
                 reviewButton.textContent = 'Exit Review';
                 reviewButton.style.backgroundColor = '#dc3545';
@@ -541,6 +566,7 @@
         });
 
         prevButton.addEventListener('click', () => {
+            speechSynthesis.cancel();
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex - 1 + flaggedIndices.length) % flaggedIndices.length;
@@ -552,6 +578,7 @@
         });
 
         nextButton.addEventListener('click', () => {
+            speechSynthesis.cancel();
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex + 1) % flaggedIndices.length;
@@ -573,6 +600,17 @@
             updateCardUI(currentCard);
         });
 
+        if (listenButton) {
+            listenButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                recognition.start();
+            });
+            recognition.onstart = () => { speechStatus.textContent = "Listening..."; };
+            recognition.onspeechend = () => { recognition.stop(); };
+            recognition.onresult = (event) => { checkAnswer(event.results[0][0].transcript); };
+            recognition.onerror = (event) => { speechStatus.textContent = `Error: ${event.error}`; };
+        }
+        
         correctButton.addEventListener('click', (e) => { e.stopPropagation(); setCardStatus('correct'); });
         incorrectButton.addEventListener('click', (e) => { e.stopPropagation(); setCardStatus('incorrect'); });
         
@@ -583,7 +621,7 @@
             voiceToggleButton.classList.toggle('active', isVoiceEnabled);
             if (isVoiceEnabled) {
                 voiceToggleButton.textContent = '🔊 Voice On';
-                speak(flashcards[currentCard].q); // Read current card on enable
+                speak(flashcards[currentCard].q);
             } else {
                 voiceToggleButton.textContent = '🔊 Voice Off';
                 speechSynthesis.cancel();
@@ -604,7 +642,7 @@
 
         resetButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all flags and answers?')) {
-                shuffleArray(flashcards); // Re-shuffle on reset
+                shuffleArray(flashcards);
                 flashcards.forEach(card => {
                     card.isFlagged = false;
                     card.status = 'unanswered';
@@ -618,22 +656,14 @@
             }
         });
 
-        let touchstartX = 0;
-        let touchstartY = 0;
-        let touchendX = 0;
+        let touchstartX = 0, touchstartY = 0, touchendX = 0;
         const swipeThreshold = 50; 
 
         function handleSwipe() {
             const deltaX = touchendX - touchstartX;
-            if (Math.abs(deltaX) < swipeThreshold) {
-                return;
-            }
-            if (touchendX < touchstartX) {
-                nextButton.click();
-            }
-            if (touchendX > touchstartX) {
-                prevButton.click();
-            }
+            if (Math.abs(deltaX) < swipeThreshold) return;
+            if (touchendX < touchstartX) nextButton.click();
+            if (touchendX > touchstartX) prevButton.click();
         }
 
         cardElement.addEventListener('touchstart', e => {
@@ -645,9 +675,7 @@
         cardElement.addEventListener('touchmove', e => {
             const moveX = e.changedTouches[0].screenX;
             const moveY = e.changedTouches[0].screenY;
-            const deltaX = moveX - touchstartX;
-            const deltaY = moveY - touchstartY;
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (Math.abs(moveX - touchstartX) > Math.abs(moveY - touchstartY)) {
                 e.preventDefault();
             }
         }, { passive: false });
