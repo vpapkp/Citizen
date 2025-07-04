@@ -33,15 +33,23 @@
         h1 {
             font-size: 1.6em;
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
+        #progress-stats {
+            margin-bottom: 15px;
+            font-size: 1em;
+            font-weight: 500;
+            color: #555;
+        }
+        #progress-stats .correct-text { color: var(--correct-color); }
+        #progress-stats .incorrect-text { color: var(--incorrect-color); }
         .card-container {
             perspective: 1000px;
             margin-bottom: 15px;
         }
         .card {
             width: 100%;
-            height: 380px; /* Reduced height */
+            height: 380px;
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.6s;
@@ -123,7 +131,7 @@
         .content {
             font-size: 1.1em;
             line-height: 1.5;
-            overflow-y: auto; /* Allow scrolling for long answers on back */
+            overflow-y: auto;
         }
         .answer-content ul { list-style-type: none; padding: 0; margin: 0; }
         .answer-content li { 
@@ -190,6 +198,11 @@
 
 <div class="container">
     <h1>Civics Flashcards (TX)</h1>
+    <div id="progress-stats">
+        <span>Completed: <span id="completed-count">0</span>/100</span> |
+        <span class="correct-text">Correct: <span id="correct-count">0</span></span> |
+        <span class="incorrect-text">Wrong: <span id="wrong-count">0</span></span>
+    </div>
     <div class="card-container">
         <div class="card" id="card">
             <div class="card-face card-face-front">
@@ -351,15 +364,12 @@
         let flaggedIndices = [];
         let currentReviewIndex = 0;
 
-        // Add originalIndex to each card object after shuffling
-        flashcards.forEach((card, index) => {
+        flashcards.forEach(card => {
             card.isFlagged = false;
             card.status = 'unanswered';
-            card.shuffledIndex = index; // Store its shuffled position
         });
         
         const originalOrder = [...flashcards].sort((a,b) => (a.q > b.q ? 1 : -1));
-
 
         const cardElement = document.getElementById('card');
         const questionTitle = document.getElementById('question-title');
@@ -377,6 +387,27 @@
         const incorrectList = document.getElementById('incorrect-list');
         const resetButton = document.getElementById('reset-button');
         const reviewButton = document.getElementById('review-button');
+        const completedCountEl = document.getElementById('completed-count');
+        const correctCountEl = document.getElementById('correct-count');
+        const wrongCountEl = document.getElementById('wrong-count');
+
+        function updateStats() {
+            let completed = 0;
+            let correct = 0;
+            let incorrect = 0;
+            for (const card of flashcards) {
+                if (card.status === 'correct') {
+                    correct++;
+                    completed++;
+                } else if (card.status === 'incorrect') {
+                    incorrect++;
+                    completed++;
+                }
+            }
+            completedCountEl.textContent = completed;
+            correctCountEl.textContent = correct;
+            wrongCountEl.textContent = incorrect;
+        }
 
         function updateCardUI(index) {
             const card = flashcards[index];
@@ -404,11 +435,15 @@
 
         function populateSelect() {
             questionSelect.innerHTML = '';
-            flashcards.forEach((card, index) => {
-                const option = document.createElement('option');
-                option.value = index;
+            const sortedForSelect = [...flashcards].map((card, index) => {
                 const originalIndex = originalOrder.findIndex(c => c.q === card.q);
-                option.textContent = `Question ${originalIndex + 1}`;
+                return { card, index, originalIndex };
+            }).sort((a,b) => a.originalIndex - b.originalIndex);
+
+            sortedForSelect.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.index;
+                option.textContent = `Question ${item.originalIndex + 1}`;
                 questionSelect.appendChild(option);
             });
         }
@@ -418,30 +453,37 @@
             incorrectList.innerHTML = '';
             let flaggedCount = 0;
             let incorrectCount = 0;
-            flashcards.forEach((card, index) => {
+
+            const summaryItems = flashcards.map((card, index) => {
                 const originalIndex = originalOrder.findIndex(c => c.q === card.q);
+                return { card, index, originalIndex };
+            }).sort((a,b) => a.originalIndex - b.originalIndex);
+
+            summaryItems.forEach(item => {
                 const li = document.createElement('li');
-                li.innerHTML = `Q${originalIndex + 1}: ${card.q.substring(0, 40)}...`;
+                li.innerHTML = `Q${item.originalIndex + 1}: ${item.card.q.substring(0, 40)}...`;
                 const jumpToCard = () => {
-                    currentCard = index;
+                    if (reviewMode) toggleReviewMode();
+                    currentCard = item.index;
                     showCard(currentCard);
-                    if(reviewMode) toggleReviewMode();
                     summarySection.style.display = 'none';
                     summaryToggleButton.textContent = 'Show Summary';
                 };
-                if (card.isFlagged) {
+
+                if (item.card.isFlagged) {
                     const flaggedLi = li.cloneNode(true);
                     flaggedLi.onclick = jumpToCard;
                     flaggedList.appendChild(flaggedLi);
                     flaggedCount++;
                 }
-                if (card.status === 'incorrect') {
+                if (item.card.status === 'incorrect') {
                     const incorrectLi = li.cloneNode(true);
                     incorrectLi.onclick = jumpToCard;
                     incorrectList.appendChild(incorrectLi);
                     incorrectCount++;
                 }
             });
+
             if (flaggedCount === 0) flaggedList.innerHTML = '<li>None</li>';
             if (incorrectCount === 0) incorrectList.innerHTML = '<li>None</li>';
         }
@@ -449,6 +491,7 @@
         function setCardStatus(status) {
             flashcards[currentCard].status = status;
             updateCardUI(currentCard);
+            updateStats();
             setTimeout(() => { nextButton.click(); }, 300);
         }
         
@@ -543,6 +586,7 @@
                 if(reviewMode) toggleReviewMode();
                 updateCardUI(currentCard);
                 renderSummary();
+                updateStats();
             }
         });
 
@@ -588,6 +632,7 @@
 
         populateSelect();
         showCard(currentCard);
+        updateStats();
         summarySection.style.display = 'none';
     });
 </script>
