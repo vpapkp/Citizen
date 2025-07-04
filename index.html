@@ -82,9 +82,11 @@
             position: absolute;
             top: 15px;
             right: 15px;
+            display: flex;
+            gap: 10px;
         }
-        #flag-button {
-            background: #f0f2f5;
+        .icon-button {
+             background: #f0f2f5;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 5px 10px;
@@ -216,6 +218,7 @@
         <div class="card" id="card">
             <div class="card-face card-face-front">
                 <div class="top-controls">
+                    <button class="icon-button" id="listen-button">🎙️</button>
                     <button class="icon-button" id="flag-button">🚩</button>
                 </div>
                 <div class="question-title" id="question-title"></div>
@@ -334,11 +337,11 @@
         { q: "What was one important thing that Abraham Lincoln did?*", a: ["freed the slaves (Emancipation Proclamation)", "saved (or preserved) the Union", "led the United States during the Civil War"], keywords: ["freed slaves", "emancipation", "saved union", "led during civil war"] },
         { q: "What did the Emancipation Proclamation do?", a: ["freed the slaves"], keywords: ["freed slaves"] },
         { q: "What did Susan B. Anthony do?", a: ["fought for women's rights", "fought for civil rights"], keywords: ["women's rights", "civil rights"] },
-        { q: "Name one war fought by the United States in the 1900s.*", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"], keywords: ["world war one", "world war two", "korean", "vietnam", "gulf"] },
+        { q: "Name one war fought by the United States in the 1900s.*", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"], keywords: ["world war one", "world war 1", "world war two", "world war 2", "korean", "vietnam", "gulf"] },
         { q: "Who was President during World War I?", a: ["(Woodrow) Wilson"], keywords: ["woodrow wilson", "wilson"] },
         { q: "Who was President during the Great Depression and World War II?", a: ["(Franklin) Roosevelt"], keywords: ["franklin roosevelt", "roosevelt"] },
         { q: "Who did the United States fight in World War II?", a: ["Japan, Germany, and Italy"], keywords: ["japan", "germany", "italy"] },
-        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"], keywords: ["world war two", "wwii"] },
+        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"], keywords: ["world war two", "world war 2", "wwii"] },
         { q: "During the Cold War, what was the main concern of the United States?", a: ["Communism"], keywords: ["communism"] },
         { q: "What movement tried to end racial discrimination?", a: ["civil rights (movement)"], keywords: ["civil rights"] },
         { q: "What did Martin Luther King, Jr. do?*", a: ["fought for civil rights", "worked for equality for all Americans"], keywords: ["civil rights", "equality"] },
@@ -407,6 +410,7 @@
         const nextButton = document.getElementById('next-button');
         const questionSelect = document.getElementById('question-select');
         const flagButton = document.getElementById('flag-button');
+        const listenButton = document.getElementById('listen-button');
         const correctButton = document.querySelector('.correct-button');
         const incorrectButton = document.querySelector('.incorrect-button');
         const summaryToggleButton = document.getElementById('summary-toggle-button');
@@ -434,7 +438,7 @@
         }
 
         function startVoiceInteraction() {
-            if (!isVoiceModeActive) return;
+            if (!isVoiceModeActive || cardElement.classList.contains('is-flipped')) return;
             const question = flashcards[currentCard].q;
             speak(question, () => {
                 if (isVoiceModeActive && recognition) {
@@ -541,14 +545,12 @@
             
             const feedbackText = status === 'correct' ? 'Correct' : 'Incorrect';
             
-            if (verbalFeedback) {
+            if (verbalFeedback && isVoiceModeActive) {
                 speak(feedbackText, () => {
-                    if (isVoiceModeActive) {
-                        nextButton.click();
-                    }
+                    if (isVoiceModeActive) nextButton.click();
                 });
             } else {
-                setTimeout(() => { nextButton.click(); }, 1200);
+                 setTimeout(() => { if (!isVoiceModeActive) nextButton.click(); }, 1200);
             }
         }
 
@@ -558,11 +560,7 @@
             const heard = transcript.toLowerCase().trim();
             const isMatch = card.keywords.some(key => heard.includes(key));
             
-            if (isMatch) {
-                setCardStatus('correct', true);
-            } else {
-                setCardStatus('incorrect', true);
-            }
+            setCardStatus(isMatch ? 'correct' : 'incorrect', true);
         }
         
         function toggleReviewMode() {
@@ -579,20 +577,24 @@
                 currentReviewIndex = 0;
                 currentCard = flaggedIndices[currentReviewIndex];
                 showCard(currentCard);
-                if (isVoiceModeActive) startVoiceInteraction();
             } else {
                 reviewButton.textContent = 'Review Flagged';
                 reviewButton.style.backgroundColor = '#ffc107';
                 questionSelect.disabled = false;
-                if (isVoiceModeActive) startVoiceInteraction();
             }
+            if (isVoiceModeActive) startVoiceInteraction();
         }
         
         if (recognition) {
             recognition.onstart = () => { speechStatus.textContent = "Listening..."; };
-            recognition.onspeechend = () => { recognition.stop(); speechStatus.textContent = "Processing...";};
+            recognition.onspeechend = () => { recognition.stop();};
             recognition.onresult = (event) => { checkAnswer(event.results[0][0].transcript); };
-            recognition.onerror = (event) => { speechStatus.textContent = `Error: ${event.error}`; };
+            recognition.onerror = (event) => { 
+                speechStatus.textContent = `Mic error: ${event.error}`;
+                if (isVoiceModeActive) { // if still in voice mode, try next card
+                    setTimeout(() => nextButton.click(), 2000);
+                }
+            };
         }
 
         cardElement.addEventListener('click', (e) => {
@@ -601,9 +603,13 @@
             }
         });
 
-        prevButton.addEventListener('click', () => {
+        function handleNavigation() {
             speechSynthesis.cancel();
             if (recognition) recognition.stop();
+            if (isVoiceModeActive) startVoiceInteraction();
+        }
+
+        prevButton.addEventListener('click', () => {
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex - 1 + flaggedIndices.length) % flaggedIndices.length;
@@ -612,12 +618,10 @@
                 currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
             }
             showCard(currentCard);
-            if (isVoiceModeActive) startVoiceInteraction();
+            handleNavigation();
         });
 
         nextButton.addEventListener('click', () => {
-            speechSynthesis.cancel();
-            if (recognition) recognition.stop();
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex + 1) % flaggedIndices.length;
@@ -626,13 +630,13 @@
                 currentCard = (currentCard + 1) % flashcards.length;
             }
             showCard(currentCard);
-            if (isVoiceModeActive) startVoiceInteraction();
+            handleNavigation();
         });
 
         questionSelect.addEventListener('change', (e) => {
             currentCard = parseInt(e.target.value);
             showCard(currentCard);
-            if (isVoiceModeActive) startVoiceInteraction();
+            handleNavigation();
         });
 
         flagButton.addEventListener('click', (e) => {
