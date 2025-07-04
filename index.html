@@ -82,11 +82,9 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            display: flex;
-            gap: 10px;
         }
-        .icon-button {
-             background: #f0f2f5;
+        #flag-button {
+            background: #f0f2f5;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 5px 10px;
@@ -199,7 +197,7 @@
         .bottom-actions button {
             flex-grow: 1;
         }
-        #voice-toggle-button.active {
+        #voice-mode-button.active {
             background-color: var(--correct-color);
         }
         .note { font-style: italic; font-size: 0.9em; color: #6c757d; }
@@ -218,7 +216,6 @@
         <div class="card" id="card">
             <div class="card-face card-face-front">
                 <div class="top-controls">
-                    <button class="icon-button" id="listen-button">🎙️</button>
                     <button class="icon-button" id="flag-button">🚩</button>
                 </div>
                 <div class="question-title" id="question-title"></div>
@@ -242,7 +239,7 @@
     </div>
     <div class="bottom-actions">
         <button class="nav-button" id="review-button" style="background-color: #ffc107; color: black;">Review Flagged</button>
-        <button class="nav-button" id="voice-toggle-button">🔊 Voice Off</button>
+        <button class="nav-button" id="voice-mode-button">🔊 Voice Mode</button>
         <button class="nav-button" id="summary-toggle-button" style="background-color: #6c757d;">Summary</button>
     </div>
     <div class="summary-section" id="summary-section">
@@ -375,7 +372,8 @@
             recognition.maxAlternatives = 1;
         } else {
             console.log("Speech Recognition Not Supported");
-            document.getElementById('listen-button').style.display = 'none';
+            const voiceModeButton = document.getElementById('voice-mode-button');
+            if(voiceModeButton) voiceModeButton.style.display = 'none';
         }
 
         function shuffleArray(array) {
@@ -391,7 +389,7 @@
         let reviewMode = false;
         let flaggedIndices = [];
         let currentReviewIndex = 0;
-        let isVoiceEnabled = false;
+        let isVoiceModeActive = false;
 
         flashcards.forEach(card => {
             card.isFlagged = false;
@@ -409,7 +407,6 @@
         const nextButton = document.getElementById('next-button');
         const questionSelect = document.getElementById('question-select');
         const flagButton = document.getElementById('flag-button');
-        const listenButton = document.getElementById('listen-button');
         const correctButton = document.querySelector('.correct-button');
         const incorrectButton = document.querySelector('.incorrect-button');
         const summaryToggleButton = document.getElementById('summary-toggle-button');
@@ -418,16 +415,37 @@
         const incorrectList = document.getElementById('incorrect-list');
         const resetButton = document.getElementById('reset-button');
         const reviewButton = document.getElementById('review-button');
-        const voiceToggleButton = document.getElementById('voice-toggle-button');
+        const voiceModeButton = document.getElementById('voice-mode-button');
         const completedCountEl = document.getElementById('completed-count');
         const correctCountEl = document.getElementById('correct-count');
         const wrongCountEl = document.getElementById('wrong-count');
 
-        function speak(text) {
-            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+        function speak(text, callback) {
+            if (!('speechSynthesis' in window)) {
+                if(callback) callback();
+                return;
+            }
             speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, ''));
+            utterance.onend = () => {
+                if (callback) callback();
+            };
             window.speechSynthesis.speak(utterance);
+        }
+
+        function startVoiceInteraction() {
+            if (!isVoiceModeActive) return;
+            const question = flashcards[currentCard].q;
+            speak(question, () => {
+                if (isVoiceModeActive && recognition) {
+                    try {
+                        recognition.start();
+                    } catch(e) {
+                        console.error("Recognition start error:", e);
+                        speechStatus.textContent = "Mic busy. Try again.";
+                    }
+                }
+            });
         }
 
         function updateStats() {
@@ -464,7 +482,6 @@
             answerText.innerHTML = answerHtml;
             questionSelect.value = index;
             updateCardUI(index);
-            speak(question.q);
         }
 
         function populateSelect() {
@@ -517,24 +534,34 @@
             if (incorrectCount === 0) incorrectList.innerHTML = '<li>None</li>';
         }
 
-        function setCardStatus(status) {
+        function setCardStatus(status, verbalFeedback = false) {
             flashcards[currentCard].status = status;
             updateCardUI(currentCard);
             updateStats();
-            setTimeout(() => { nextButton.click(); }, 1200); // Give user time to see result
+            
+            const feedbackText = status === 'correct' ? 'Correct' : 'Incorrect';
+            
+            if (verbalFeedback) {
+                speak(feedbackText, () => {
+                    if (isVoiceModeActive) {
+                        nextButton.click();
+                    }
+                });
+            } else {
+                setTimeout(() => { nextButton.click(); }, 1200);
+            }
         }
 
         function checkAnswer(transcript) {
             speechStatus.textContent = `I heard: "${transcript}"`;
             const card = flashcards[currentCard];
             const heard = transcript.toLowerCase().trim();
-            
             const isMatch = card.keywords.some(key => heard.includes(key));
             
             if (isMatch) {
-                setCardStatus('correct');
+                setCardStatus('correct', true);
             } else {
-                setCardStatus('incorrect');
+                setCardStatus('incorrect', true);
             }
         }
         
@@ -552,11 +579,20 @@
                 currentReviewIndex = 0;
                 currentCard = flaggedIndices[currentReviewIndex];
                 showCard(currentCard);
+                if (isVoiceModeActive) startVoiceInteraction();
             } else {
                 reviewButton.textContent = 'Review Flagged';
                 reviewButton.style.backgroundColor = '#ffc107';
                 questionSelect.disabled = false;
+                if (isVoiceModeActive) startVoiceInteraction();
             }
+        }
+        
+        if (recognition) {
+            recognition.onstart = () => { speechStatus.textContent = "Listening..."; };
+            recognition.onspeechend = () => { recognition.stop(); speechStatus.textContent = "Processing...";};
+            recognition.onresult = (event) => { checkAnswer(event.results[0][0].transcript); };
+            recognition.onerror = (event) => { speechStatus.textContent = `Error: ${event.error}`; };
         }
 
         cardElement.addEventListener('click', (e) => {
@@ -567,6 +603,7 @@
 
         prevButton.addEventListener('click', () => {
             speechSynthesis.cancel();
+            if (recognition) recognition.stop();
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex - 1 + flaggedIndices.length) % flaggedIndices.length;
@@ -575,10 +612,12 @@
                 currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
             }
             showCard(currentCard);
+            if (isVoiceModeActive) startVoiceInteraction();
         });
 
         nextButton.addEventListener('click', () => {
             speechSynthesis.cancel();
+            if (recognition) recognition.stop();
             if (reviewMode) {
                 if (flaggedIndices.length === 0) return;
                 currentReviewIndex = (currentReviewIndex + 1) % flaggedIndices.length;
@@ -587,11 +626,13 @@
                 currentCard = (currentCard + 1) % flashcards.length;
             }
             showCard(currentCard);
+            if (isVoiceModeActive) startVoiceInteraction();
         });
 
         questionSelect.addEventListener('change', (e) => {
             currentCard = parseInt(e.target.value);
             showCard(currentCard);
+            if (isVoiceModeActive) startVoiceInteraction();
         });
 
         flagButton.addEventListener('click', (e) => {
@@ -599,32 +640,23 @@
             flashcards[currentCard].isFlagged = !flashcards[currentCard].isFlagged;
             updateCardUI(currentCard);
         });
-
-        if (listenButton) {
-            listenButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                recognition.start();
-            });
-            recognition.onstart = () => { speechStatus.textContent = "Listening..."; };
-            recognition.onspeechend = () => { recognition.stop(); };
-            recognition.onresult = (event) => { checkAnswer(event.results[0][0].transcript); };
-            recognition.onerror = (event) => { speechStatus.textContent = `Error: ${event.error}`; };
-        }
         
         correctButton.addEventListener('click', (e) => { e.stopPropagation(); setCardStatus('correct'); });
         incorrectButton.addEventListener('click', (e) => { e.stopPropagation(); setCardStatus('incorrect'); });
         
         reviewButton.addEventListener('click', toggleReviewMode);
 
-        voiceToggleButton.addEventListener('click', () => {
-            isVoiceEnabled = !isVoiceEnabled;
-            voiceToggleButton.classList.toggle('active', isVoiceEnabled);
-            if (isVoiceEnabled) {
-                voiceToggleButton.textContent = '🔊 Voice On';
-                speak(flashcards[currentCard].q);
+        voiceModeButton.addEventListener('click', () => {
+            isVoiceModeActive = !isVoiceModeActive;
+            voiceModeButton.classList.toggle('active', isVoiceModeActive);
+            if (isVoiceModeActive) {
+                voiceModeButton.textContent = '🔊 Voice On';
+                startVoiceInteraction();
             } else {
-                voiceToggleButton.textContent = '🔊 Voice Off';
+                voiceModeButton.textContent = '🔊 Voice Mode';
                 speechSynthesis.cancel();
+                if (recognition) recognition.stop();
+                speechStatus.textContent = '';
             }
         });
 
