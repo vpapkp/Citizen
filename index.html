@@ -82,11 +82,9 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            display: flex;
-            gap: 10px;
         }
-        .icon-button {
-             background: #f0f2f5;
+        #flag-button {
+            background: #f0f2f5;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 5px 10px;
@@ -218,7 +216,6 @@
         <div class="card" id="card">
             <div class="card-face card-face-front">
                 <div class="top-controls">
-                    <button class="icon-button" id="listen-button">🎙️</button>
                     <button class="icon-button" id="flag-button">🚩</button>
                 </div>
                 <div class="question-title" id="question-title"></div>
@@ -260,7 +257,7 @@
 
 <script>
     const flashcards = [
-        { q: "What is the supreme law of the land?", a: ["the Constitution"], keywords: ["constitution"] },
+        { q: "What is the supreme law of the land?", a: ["the Constitution"], keywords: ["constitution", "constitut"] },
         { q: "What does the Constitution do?", a: ["sets up the government", "defines the government", "protects basic rights of Americans"], keywords: ["sets", "defines", "government", "protects", "rights"] },
         { q: "The idea of self-government is in the first three words of the Constitution. What are these words?", a: ["We the People"], keywords: ["we the people"] },
         { q: "What is an amendment?", a: ["a change (to the Constitution)", "an addition (to the Constitution)"], keywords: ["change", "addition"] },
@@ -296,7 +293,7 @@
         { q: "Who vetoes bills?", a: ["the President"], keywords: ["president"] },
         { q: "What does the President's Cabinet do?", a: ["advises the President"], keywords: ["advises"] },
         { q: "What are two Cabinet-level positions?", a: ["Secretary of Defense", "Secretary of Education", "Secretary of State", "Attorney General", "Vice President"], keywords: ["defense", "education", "state", "attorney general", "vice president", "agriculture", "commerce", "energy", "labor", "treasury"] },
-        { q: "What does the judicial branch do?", a: ["reviews laws", "explains laws", "resolves disputes", "decides if a law goes against the Constitution"], keywords: ["reviews", "explains", "resolves", "decides"] },
+        { q: "What does the judicial branch do?", a: ["reviews laws", "explains laws", "resolves disputes", "decides if a law goes against the Constitution"], keywords: ["reviews", "explains", "resolves", "decides", "judicial"] },
         { q: "What is the highest court in the United States?", a: ["the Supreme Court"], keywords: ["supreme court"] },
         { q: "How many justices are on the Supreme Court?", a: ["Nine (9)"], keywords: ["9", "nine"] },
         { q: "Who is the Chief Justice of the United States now?", a: ["John G. Roberts, Jr."], keywords: ["john roberts", "roberts"] },
@@ -321,30 +318,30 @@
         { q: "Who lived in America before the Europeans arrived?", a: ["American Indians", "Native Americans"], keywords: ["american indians", "native americans"] },
         { q: "What group of people was taken to America and sold as slaves?", a: ["Africans", "people from Africa"], keywords: ["africans", "africa"] },
         { q: "Why did the colonists fight the British?", a: ["because of high taxes (taxation without representation)", "because they didn't have self-government"], keywords: ["high taxes", "taxation without representation", "self-government"] },
-        { q: "Who wrote the Declaration of Independence?", a: ["(Thomas) Jefferson"], keywords: ["jefferson"] },
+        { q: "Who wrote the Declaration of Independence?", a: ["(Thomas) Jefferson"], keywords: ["jefferson", "jeffers"] },
         { q: "When was the Declaration of Independence adopted?", a: ["July 4, 1776"], keywords: ["july 4 1776"] },
         { q: "There were 13 original states. Name three.", a: ["New Hampshire", "Massachusetts", "New York", "Virginia", "Maryland"], keywords: ["hampshire", "massachusetts", "york", "virginia", "maryland", "carolina", "georgia", "jersey", "pennsylvania", "delaware", "connecticut", "rhode island"] },
         { q: "What happened at the Constitutional Convention?", a: ["The Constitution was written."], keywords: ["constitution was written"] },
         { q: "When was the Constitution written?", a: ["1787"], keywords: ["1787"] },
         { q: "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.", a: ["(James) Madison", "(Alexander) Hamilton", "(John) Jay"], keywords: ["madison", "hamilton", "jay", "publius"] },
         { q: "What is one thing Benjamin Franklin is famous for?", a: ["U.S. diplomat", "oldest member of the Constitutional Convention", "first Postmaster General", "writer of 'Poor Richard's Almanac'"], keywords: ["diplomat", "oldest member", "postmaster", "poor richard", "libraries"] },
-        { q: "Who is the 'Father of Our Country'?", a: ["(George) Washington"], keywords: ["george washington", "washington"] },
-        { q: "Who was the first President?*", a: ["(George) Washington"], keywords: ["george washington", "washington"] },
+        { q: "Who is the 'Father of Our Country'?", a: ["(George) Washington"], keywords: ["george washington", "washingt"] },
+        { q: "Who was the first President?*", a: ["(George) Washington"], keywords: ["george washington", "washingt"] },
         { q: "What territory did the United States buy from France in 1803?", a: ["the Louisiana Territory"], keywords: ["louisiana"] },
         { q: "Name one war fought by the United States in the 1800s.", a: ["War of 1812", "Mexican-American War", "Civil War", "Spanish-American War"], keywords: ["1812", "mexican", "civil", "spanish"] },
         { q: "Name the U.S. war between the North and the South.", a: ["the Civil War", "the War between the States"], keywords: ["civil war", "war between states"] },
         { q: "Name one problem that led to the Civil War.", a: ["slavery", "economic reasons", "states' rights"], keywords: ["slavery", "economic", "states' rights"] },
-        { q: "What was one important thing that Abraham Lincoln did?*", a: ["freed the slaves (Emancipation Proclamation)", "saved (or preserved) the Union", "led the United States during the Civil War"], keywords: ["freed slaves", "emancipation", "saved union", "led during civil war"] },
-        { q: "What did the Emancipation Proclamation do?", a: ["freed the slaves"], keywords: ["freed slaves"] },
-        { q: "What did Susan B. Anthony do?", a: ["fought for women's rights", "fought for civil rights"], keywords: ["women's rights", "civil rights"] },
+        { q: "What was one important thing that Abraham Lincoln did?*", a: ["freed the slaves (Emancipation Proclamation)", "saved (or preserved) the Union", "led the United States during the Civil War"], keywords: ["freed slaves", "emancipation", "saved union", "led during civil war", "lincoln"] },
+        { q: "What did the Emancipation Proclamation do?", a: ["freed the slaves"], keywords: ["freed slaves", "emancipation"] },
+        { q: "What did Susan B. Anthony do?", a: ["fought for women's rights", "fought for civil rights"], keywords: ["women's rights", "civil rights", "anthony"] },
         { q: "Name one war fought by the United States in the 1900s.*", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"], keywords: ["world war one", "world war 1", "world war two", "world war 2", "korean", "vietnam", "gulf"] },
         { q: "Who was President during World War I?", a: ["(Woodrow) Wilson"], keywords: ["woodrow wilson", "wilson"] },
         { q: "Who was President during the Great Depression and World War II?", a: ["(Franklin) Roosevelt"], keywords: ["franklin roosevelt", "roosevelt"] },
         { q: "Who did the United States fight in World War II?", a: ["Japan, Germany, and Italy"], keywords: ["japan", "germany", "italy"] },
-        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"], keywords: ["world war two", "world war 2", "wwii"] },
+        { q: "Before he was President, Eisenhower was a general. What war was he in?", a: ["World War II"], keywords: ["world war two", "world war 2", "wwii", "eisenhower"] },
         { q: "During the Cold War, what was the main concern of the United States?", a: ["Communism"], keywords: ["communism"] },
         { q: "What movement tried to end racial discrimination?", a: ["civil rights (movement)"], keywords: ["civil rights"] },
-        { q: "What did Martin Luther King, Jr. do?*", a: ["fought for civil rights", "worked for equality for all Americans"], keywords: ["civil rights", "equality"] },
+        { q: "What did Martin Luther King, Jr. do?*", a: ["fought for civil rights", "worked for equality for all Americans"], keywords: ["civil rights", "equality", "martin luther king"] },
         { q: "What major event happened on September 11, 2001, in the United States?", a: ["Terrorists attacked the United States."], keywords: ["terrorists attacked", "september 11", "9/11"] },
         { q: "Name one American Indian tribe in the United States.", a: ["Cherokee", "Navajo", "Sioux", "Chippewa", "Choctaw", "Pueblo", "Apache"], keywords: ["cherokee", "navajo", "sioux", "chippewa", "choctaw", "pueblo", "apache"] },
         { q: "Name one of the two longest rivers in the United States.", a: ["Missouri (River)", "Mississippi (River)"], keywords: ["missouri", "mississippi"] },
@@ -366,6 +363,18 @@
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
+
+        let preferredVoice;
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            // Find a high-quality US English voice
+            preferredVoice = voices.find(voice => voice.lang === 'en-US' && !voice.name.includes('Google') && voice.name.includes('')); 
+        }
+
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
@@ -410,7 +419,6 @@
         const nextButton = document.getElementById('next-button');
         const questionSelect = document.getElementById('question-select');
         const flagButton = document.getElementById('flag-button');
-        const listenButton = document.getElementById('listen-button');
         const correctButton = document.querySelector('.correct-button');
         const incorrectButton = document.querySelector('.incorrect-button');
         const summaryToggleButton = document.getElementById('summary-toggle-button');
@@ -431,6 +439,9 @@
             }
             speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, ''));
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
             utterance.onend = () => {
                 if (callback) callback();
             };
@@ -547,10 +558,12 @@
             
             if (verbalFeedback && isVoiceModeActive) {
                 speak(feedbackText, () => {
-                    if (isVoiceModeActive) nextButton.click();
+                    if (isVoiceModeActive) {
+                        setTimeout(() => nextButton.click(), 500);
+                    }
                 });
-            } else {
-                 setTimeout(() => { if (!isVoiceModeActive) nextButton.click(); }, 1200);
+            } else if (!isVoiceModeActive) {
+                 setTimeout(() => nextButton.click(), 1200);
             }
         }
 
@@ -591,7 +604,7 @@
             recognition.onresult = (event) => { checkAnswer(event.results[0][0].transcript); };
             recognition.onerror = (event) => { 
                 speechStatus.textContent = `Mic error: ${event.error}`;
-                if (isVoiceModeActive) { // if still in voice mode, try next card
+                if (isVoiceModeActive) {
                     setTimeout(() => nextButton.click(), 2000);
                 }
             };
@@ -603,35 +616,31 @@
             }
         });
 
-        function handleNavigation() {
+        function handleNavigation(isNext) {
             speechSynthesis.cancel();
             if (recognition) recognition.stop();
+            
+            if (reviewMode) {
+                if (flaggedIndices.length === 0) return;
+                if(isNext) {
+                    currentReviewIndex = (currentReviewIndex + 1) % flaggedIndices.length;
+                } else {
+                    currentReviewIndex = (currentReviewIndex - 1 + flaggedIndices.length) % flaggedIndices.length;
+                }
+                currentCard = flaggedIndices[currentReviewIndex];
+            } else {
+                if(isNext) {
+                    currentCard = (currentCard + 1) % flashcards.length;
+                } else {
+                    currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+                }
+            }
+            showCard(currentCard);
             if (isVoiceModeActive) startVoiceInteraction();
         }
 
-        prevButton.addEventListener('click', () => {
-            if (reviewMode) {
-                if (flaggedIndices.length === 0) return;
-                currentReviewIndex = (currentReviewIndex - 1 + flaggedIndices.length) % flaggedIndices.length;
-                currentCard = flaggedIndices[currentReviewIndex];
-            } else {
-                currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
-            }
-            showCard(currentCard);
-            handleNavigation();
-        });
-
-        nextButton.addEventListener('click', () => {
-            if (reviewMode) {
-                if (flaggedIndices.length === 0) return;
-                currentReviewIndex = (currentReviewIndex + 1) % flaggedIndices.length;
-                currentCard = flaggedIndices[currentReviewIndex];
-            } else {
-                currentCard = (currentCard + 1) % flashcards.length;
-            }
-            showCard(currentCard);
-            handleNavigation();
-        });
+        prevButton.addEventListener('click', () => handleNavigation(false));
+        nextButton.addEventListener('click', () => handleNavigation(true));
 
         questionSelect.addEventListener('change', (e) => {
             currentCard = parseInt(e.target.value);
