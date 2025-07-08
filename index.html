@@ -216,7 +216,7 @@
         <div class="card" id="card">
             <div class="card-face card-face-front">
                 <div class="top-controls">
-                    <button class="icon-button" id="flag-button">🚩</button>
+                    <button class="icon-button" id="listen-button" style="display:none;">🎙️</button> <button class="icon-button" id="flag-button">🚩</button>
                 </div>
                 <div class="question-title" id="question-title"></div>
                 <div class="content" id="question-text"></div>
@@ -363,18 +363,21 @@
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
-
         let preferredVoice;
+
         function loadVoices() {
-            const voices = speechSynthesis.getVoices();
-            // Find a high-quality US English voice
-            preferredVoice = voices.find(voice => voice.lang === 'en-US' && !voice.name.includes('Google') && voice.name.includes('')); 
+            const voices = window.speechSynthesis.getVoices();
+            // Prioritize a high-quality, local, non-default US English voice
+            preferredVoice = voices.find(voice => voice.lang === 'en-US' && voice.localService && !voice.default) || 
+                            voices.find(voice => voice.lang === 'en-US' && voice.localService) ||
+                            voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Google')) ||
+                            voices.find(voice => voice.lang === 'en-US');
         }
 
         if ('speechSynthesis' in window) {
             speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices(); // Initial call
         }
-
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
@@ -645,7 +648,7 @@
         questionSelect.addEventListener('change', (e) => {
             currentCard = parseInt(e.target.value);
             showCard(currentCard);
-            handleNavigation();
+            if (isVoiceModeActive) startVoiceInteraction();
         });
 
         flagButton.addEventListener('click', (e) => {
