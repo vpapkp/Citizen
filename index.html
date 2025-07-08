@@ -367,12 +367,9 @@
 
         function loadAndSetVoice() {
             const voices = window.speechSynthesis.getVoices();
-            if (!voices.length) {
-                return;
-            }
-            // Prioritize the system's default US English voice, assuming it's the high-quality one.
+            if (!voices.length) return;
+            // Prioritize the system's default US English voice, as this is what the user sets.
             preferredVoice = voices.find(voice => voice.lang === 'en-US' && voice.default);
-
             // Fallback if no default is found
             if (!preferredVoice) {
                 preferredVoice = voices.find(voice => voice.lang === 'en-US' && voice.localService);
@@ -383,6 +380,7 @@
         }
 
         if ('speechSynthesis' in window) {
+            // Voices may load asynchronously.
             speechSynthesis.onvoiceschanged = loadAndSetVoice;
             loadAndSetVoice();
         }
@@ -450,6 +448,7 @@
             }
             speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, ''));
+            // Use the preferred voice if found
             if (preferredVoice) {
                 utterance.voice = preferredVoice;
             }
